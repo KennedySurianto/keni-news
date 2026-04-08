@@ -104,8 +104,10 @@ async function run() {
         await sendEmail(analysisHtml);
         
         console.log('✅ Success! Check your inbox.');
+        process.exit(0);
     } catch (error) {
         console.error('❌ Error running the bot:', error);
+        process.exit(1);
     }
 }
 
