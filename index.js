@@ -29,6 +29,9 @@ async function fetchNews() {
     return combinedNews;
 }
 
+// A simple helper function to pause execution
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function analyzeNews(newsText) {
     const prompt = `
     You are an expert financial analyst. Read the following news snippets and format them into an email report. 
@@ -41,12 +44,33 @@ async function analyzeNews(newsText) {
     ${newsText}
     `;
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-flash-latest', // Fast and cost-effective model
-        contents: prompt,
-    });
+    const MAX_RETRIES = 3;
 
-    return response.text;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            // Attempt to call the API
+            const response = await ai.models.generateContent({
+                model: 'gemini-flash-latest',
+                contents: prompt,
+            });
+            
+            // If successful, return the text and break out of the loop
+            return response.text;
+        } catch (error) {
+            // Check if the error is a 503 (Server Busy) and we haven't run out of retries
+            if (error.status === 503 && attempt < MAX_RETRIES) {
+                // Calculate wait time
+                const waitTime = Math.pow(2, attempt) * 1000; 
+                console.warn(`⚠️ Gemini API busy (503). Retrying attempt ${attempt + 1} in ${waitTime / 1000} seconds...`);
+                
+                // Wait before looping again
+                await delay(waitTime);
+            } else {
+                // If it's a different error
+                throw new Error(`Gemini API failed after ${attempt} attempts: ${error.message}`);
+            }
+        }
+    }
 }
 
 async function sendEmail(htmlContent) {
