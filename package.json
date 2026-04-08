@@ -1,0 +1,16 @@
+{
+  "name": "keni-news",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@google/genai": "^0.1.2",
+    "dotenv": "^16.4.7",
+    "nodemailer": "^6.9.16",
+    "rss-parser": "^3.13.0"
+  }
+}
